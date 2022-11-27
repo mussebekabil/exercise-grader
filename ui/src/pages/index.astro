@@ -1,0 +1,36 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Card from '../components/Card.astro';
+import Wrapper from '../components/Wrapper.jsx';
+
+const exercises = await Astro.glob('../data/*.md');
+
+Astro.response.headers.set("cache-control", "no-store")
+---
+<script>
+import { initWsConnection, aggregateExercises } from "../utils/scripts.js";
+
+// Initialize websocket 
+initWsConnection()
+
+// Aggregate exercise data as completed and unanswered 
+aggregateExercises();
+</script>
+
+<Layout title="Welcome to Astro.">
+	<main>
+		<Wrapper client:visible>
+			<ul role="list" class="link-card-grid">
+				{exercises.map(exercise => {
+					return (
+						<Card
+							id={exercise.frontmatter.slug}
+							href={`exercises/${exercise.frontmatter.slug}`}
+							title={exercise.frontmatter.title}
+							body={exercise.frontmatter.description}
+						/>
+				)})}
+			</ul>
+		</Wrapper>
+	</main>
+</Layout>

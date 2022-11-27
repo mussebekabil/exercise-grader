@@ -1,0 +1,67 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import SolutionForm from '../../components/SolutionForm.jsx';
+
+export async function getStaticPaths() {
+
+	const exercises = await Astro.glob('../../data/*.md');
+
+	return exercises.map((exercise) => {
+		return {
+			params: {slug: exercise.frontmatter.slug},
+			props: {...exercise}
+		}
+	})
+}
+
+const {Content, frontmatter} = Astro.props;
+---
+<script>
+	import { disableReSubmission, initWsConnection } from '../../utils/scripts.js';
+	
+	// Initialize websocket 
+	initWsConnection()
+	
+	// Show grade and disable submission if exercise is already submitted
+	disableReSubmission();
+
+</script>
+<Layout title={frontmatter.title}>
+	<main>
+			<h1>Exercise name: <span class="text-gradient">{frontmatter.title}</span></h1>
+			<div id={frontmatter.slug} class="instructions">
+				<div class='grade-container'></div>
+				<Content />
+				<SolutionForm exerciseId={frontmatter.slug} client:visible />
+			</div>
+  </main>
+</Layout>
+
+<style>
+.grade-container{
+	display: none;
+}
+
+.grade-container.active {
+  display: grid;
+  justify-content: center;
+  align-items: center;
+  height: 35px;
+  color: white;
+  font-size: 1.2rem;
+}
+
+.grade-container.pass {
+  background-color: green;
+}
+
+.grade-container.fail {
+  background-color: orange;
+}
+
+.grade-container.error {
+  background-color: red;
+}
+</style>
+
+
